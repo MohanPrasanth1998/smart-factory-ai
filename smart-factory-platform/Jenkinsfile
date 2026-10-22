@@ -30,7 +30,7 @@ pipeline {
 
     environment {
         REGISTRY = 'ghcr.io'
-        IMAGE_PREFIX = 'ghcr.io/${GHCR_OWNER}'
+        IMAGE_PREFIX = "ghcr.io/${params.GHCR_OWNER}"
         MYSQL_HOST = 'host.docker.internal'
         MYSQL_PORT = '3306'
     }
