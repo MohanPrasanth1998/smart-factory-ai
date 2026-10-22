@@ -1,3 +1,4 @@
+
 pipeline {
   agent any
 
@@ -10,8 +11,23 @@ pipeline {
   }
 
   parameters {
-    string(name: 'GHCR_OWNER', defaultValue: '', description: 'Lowercase GitHub user or organization that owns the GHCR packages.')
-    choice(name: 'DEPLOY_TARGET', choices: ['none', 'qa-remote'], description: 'Deploy after publishing. Local Windows Docker deployment is run with scripts/deploy-local.ps1.')
+    string(
+      name: 'GHCR_OWNER',
+      defaultValue: 'mohanprasanth1998',
+      description: 'Lowercase GitHub username or organization for GHCR.'
+    )
+
+    booleanParam(
+      name: 'PUBLISH_IMAGES',
+      defaultValue: false,
+      description: 'Build and publish non-AI service images to GHCR.'
+    )
+
+    choice(
+      name: 'DEPLOY_TARGET',
+      choices: ['none', 'qa-remote'],
+      description: 'Deploy to remote QA only after publishing images.'
+    )
   }
 
   environment {
@@ -23,86 +39,195 @@ pipeline {
     stage('Checkout and validate parameters') {
       steps {
         checkout scm
+
         script {
-          if (!params.GHCR_OWNER?.trim()) {
-            error('Set GHCR_OWNER to your lowercase GitHub username or organization before running this pipeline.')
+          if (params.PUBLISH_IMAGES || params.DEPLOY_TARGET == 'qa-remote') {
+            if (!params.GHCR_OWNER?.trim()) {
+              error('GHCR_OWNER is required when publishing or deploying.')
+            }
+
+            if (!(params.GHCR_OWNER ==~ /[a-z0-9][a-z0-9-]*/)) {
+              error('GHCR_OWNER must contain lowercase letters, digits, and hyphens only.')
+            }
           }
-          if (!(params.GHCR_OWNER ==~ /[a-z0-9][a-z0-9-]*/)) {
-            error('GHCR_OWNER must contain only lowercase letters, digits, and hyphens.')
+
+          if (params.DEPLOY_TARGET == 'qa-remote' && !params.PUBLISH_IMAGES) {
+            error('Set PUBLISH_IMAGES=true before selecting qa-remote.')
           }
-          env.IMAGE_TAG = (env.GIT_COMMIT ?: sh(script: 'git rev-parse HEAD', returnStdout: true).trim()).take(7)
-          env.IMAGE_NAMESPACE = "ghcr.io/${params.GHCR_OWNER}/smart-factory"
-          echo "Image tag: ${env.IMAGE_TAG}"
+
+          env.IMAGE_TAG = (env.GIT_COMMIT ?: sh(
+            script: 'git rev-parse HEAD',
+            returnStdout: true
+          ).trim()).take(7)
+
+          env.IMAGE_NAMESPACE =
+            "${GHCR_IMAGE_ROOT}/${params.GHCR_OWNER}/smart-factory"
+
+          echo "Commit/image tag: ${env.IMAGE_TAG}"
           echo "Image namespace: ${env.IMAGE_NAMESPACE}"
         }
+
         sh 'git status --short'
+
+        sh '''#!/usr/bin/env bash
+set -euo pipefail
+test -f smart-factory-platform/Jenkinsfile
+test -d smart-factory-platform/services
+test -f smart-factory-platform/docker-compose.yml
+'''
       }
     }
 
-    stage('Maven verify all services') {
+    stage('Verify build tools') {
       steps {
         sh '''#!/usr/bin/env bash
 set -euo pipefail
-for pom in \
-  services/auth/auth-service/pom.xml \
-  services/factory/pom.xml \
-  services/machine/machine-service/pom.xml \
-  services/telemetry/telemetry-service/pom.xml \
-  services/device-simulator/device-simulator-service/pom.xml \
-  services/maintenances/pom.xml \
-  services/production/production-service/pom.xml \
-  services/analytics/analytics-service/pom.xml \
-  services/notification/notification-service/pom.xml \
-  services/gateway/api-gateway/pom.xml \
-  services/ai/ai-service/pom.xml
-do
-  echo "===== Maven verify: ${pom} ====="
+
+echo "===== Java ====="
+java -version
+
+echo "===== Maven ====="
+mvn -version
+
+echo "===== Docker CLI ====="
+docker --version
+
+echo "===== Docker Compose ====="
+docker compose version
+'''
+      }
+    }
+
+    stage('Maven verify all non-AI services') {
+      steps {
+        dir('smart-factory-platform') {
+          sh '''#!/usr/bin/env bash
+set -euo pipefail
+
+poms=(
+  services/auth/auth-service/pom.xml
+  services/factory/pom.xml
+  services/machine/machine-service/pom.xml
+  services/telemetry/telemetry-service/pom.xml
+  services/device-simulator/device-simulator-service/pom.xml
+  services/maintenances/pom.xml
+  services/production/production-service/pom.xml
+  services/analytics/analytics-service/pom.xml
+  services/notification/notification-service/pom.xml
+  services/gateway/api-gateway/pom.xml
+)
+
+for pom in "${poms[@]}"; do
+  if [[ ! -f "$pom" ]]; then
+    echo "ERROR: Maven POM not found: $pom"
+    exit 1
+  fi
+
+  echo "===== Maven verify: $pom ====="
   mvn -B -ntp -f "$pom" verify
 done
 '''
+        }
       }
     }
 
     stage('Validate Compose files') {
       steps {
-        sh '''#!/usr/bin/env bash
+        dir('smart-factory-platform') {
+          sh '''#!/usr/bin/env bash
 set -euo pipefail
-# Example files provide placeholder values only; no real secrets are used here.
+
+test -f .env.qa.example
 cp .env.qa.example .env.ci
-set -a
-. ./.env.ci
-set +a
-IMAGE_PREFIX="${IMAGE_NAMESPACE}" IMAGE_TAG="${IMAGE_TAG}" docker compose --env-file .env.ci -f docker-compose.yml -f docker-compose.develop.yml config -q
-IMAGE_PREFIX="${IMAGE_NAMESPACE}" IMAGE_TAG="${IMAGE_TAG}" docker compose --env-file .env.ci -f docker-compose.yml -f docker-compose.qa.yml config -q
-rm -f .env.ci
+
+cleanup() {
+  rm -f .env.ci
+}
+trap cleanup EXIT
+
+export IMAGE_PREFIX="${IMAGE_NAMESPACE}"
+export IMAGE_TAG="${IMAGE_TAG}"
+
+echo "===== Validate develop Compose configuration ====="
+docker compose \
+  --env-file .env.ci \
+  -f docker-compose.yml \
+  -f docker-compose.develop.yml \
+  config -q
+
+echo "===== Validate QA Compose configuration ====="
+docker compose \
+  --env-file .env.ci \
+  -f docker-compose.yml \
+  -f docker-compose.qa.yml \
+  config -q
+
+echo "Compose configurations are valid."
 '''
+        }
       }
     }
 
     stage('Build and publish multi-arch images to GHCR') {
-      when { not { changeRequest() } }
+      when {
+        expression {
+          return params.PUBLISH_IMAGES && !env.CHANGE_ID
+        }
+      }
+
       steps {
-        withCredentials([usernamePassword(credentialsId: 'smart-factory-ghcr-write', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
-          sh '''#!/usr/bin/env bash
+        dir('smart-factory-platform') {
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'smart-factory-ghcr-write',
+              usernameVariable: 'GHCR_USER',
+              passwordVariable: 'GHCR_TOKEN'
+            )
+          ]) {
+            sh '''#!/usr/bin/env bash
 set -euo pipefail
-printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USER" --password-stdin
+
+printf '%s' "$GHCR_TOKEN" |
+  docker login ghcr.io \
+    --username "$GHCR_USER" \
+    --password-stdin
+
+cleanup() {
+  docker logout ghcr.io >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
 if ! docker buildx inspect smart-factory-builder >/dev/null 2>&1; then
-  docker buildx create --name smart-factory-builder --use
+  docker buildx create \
+    --name smart-factory-builder \
+    --driver docker-container \
+    --use
 else
   docker buildx use smart-factory-builder
 fi
+
 docker buildx inspect --bootstrap
 
 build_and_push() {
   local service="$1"
   local context="$2"
-  echo "===== Building and publishing ${IMAGE_NAMESPACE}/${service}:${IMAGE_TAG} ====="
+  local dockerfile="${context}/Dockerfile.ci"
+
+  if [[ ! -f "$dockerfile" ]]; then
+    echo "ERROR: Dockerfile not found: $dockerfile"
+    exit 1
+  fi
+
+  echo "===== Publishing ${IMAGE_NAMESPACE}/${service}:${IMAGE_TAG} ====="
+
   docker buildx build \
-    --file "$context/Dockerfile.ci" \
+    --file "$dockerfile" \
     --platform linux/amd64,linux/arm64 \
     --tag "${IMAGE_NAMESPACE}/${service}:${IMAGE_TAG}" \
-    --push "$context"
+    --push \
+    "$context"
 }
+
 build_and_push auth-service services/auth/auth-service
 build_and_push factory-service services/factory
 build_and_push machine-service services/machine/machine-service
@@ -114,34 +239,80 @@ build_and_push analytics-service services/analytics/analytics-service
 build_and_push notification-service services/notification/notification-service
 build_and_push api-gateway services/gateway/api-gateway
 
-docker logout ghcr.io
+echo "All configured non-AI images were published successfully."
 '''
+          }
         }
       }
     }
 
     stage('Deploy QA (manual parameter)') {
-      when { expression { params.DEPLOY_TARGET == 'qa-remote' && !env.CHANGE_ID } }
-      steps {
-        script {
-          if (!params.GHCR_OWNER?.trim()) error('GHCR_OWNER is required for QA deployment.')
+      when {
+        expression {
+          return params.DEPLOY_TARGET == 'qa-remote' && !env.CHANGE_ID
         }
-        withCredentials([
-          string(credentialsId: 'smart-factory-qa-host', variable: 'QA_HOST'),
-          string(credentialsId: 'smart-factory-qa-path', variable: 'QA_DEPLOY_PATH')
-        ]) {
-          withCredentials([sshUserPrivateKey(credentialsId: 'smart-factory-qa-ssh', keyFileVariable: 'QA_SSH_KEY', usernameVariable: 'QA_SSH_USER')]) {
+      }
+
+      steps {
+        dir('smart-factory-platform') {
+          withCredentials([
+            string(
+              credentialsId: 'smart-factory-qa-host',
+              variable: 'QA_HOST'
+            ),
+            string(
+              credentialsId: 'smart-factory-qa-path',
+              variable: 'QA_DEPLOY_PATH'
+            ),
+            sshUserPrivateKey(
+              credentialsId: 'smart-factory-qa-ssh',
+              keyFileVariable: 'QA_SSH_KEY',
+              usernameVariable: 'QA_SSH_USER'
+            )
+          ]) {
             sh '''#!/usr/bin/env bash
 set -euo pipefail
-: "${QA_HOST:?Configure the QA host Secret Text credential}"
-: "${QA_DEPLOY_PATH:?Configure the QA deployment path Secret Text credential}"
+
+: "${QA_HOST:?Configure smart-factory-qa-host in Jenkins Credentials}"
+: "${QA_DEPLOY_PATH:?Configure smart-factory-qa-path in Jenkins Credentials}"
+: "${QA_SSH_USER:?Configure the SSH username in Jenkins Credentials}"
+
+test -f docker-compose.yml
+test -f docker-compose.qa.yml
+test -f infra/mysql/init.sql
+
 mkdir -p .deploy/infra/mysql
-cp docker-compose.yml docker-compose.qa.yml .deploy/
+
+cp docker-compose.yml .deploy/
+cp docker-compose.qa.yml .deploy/
 cp infra/mysql/init.sql .deploy/infra/mysql/
-ssh -i "$QA_SSH_KEY" -o BatchMode=yes "$QA_SSH_USER@$QA_HOST" "mkdir -p '$QA_DEPLOY_PATH/infra/mysql' && test -f '$QA_DEPLOY_PATH/.env'"
-scp -i "$QA_SSH_KEY" -o BatchMode=yes .deploy/docker-compose.yml .deploy/docker-compose.qa.yml "$QA_SSH_USER@$QA_HOST:$QA_DEPLOY_PATH/"
-scp -i "$QA_SSH_KEY" -o BatchMode=yes .deploy/infra/mysql/init.sql "$QA_SSH_USER@$QA_HOST:$QA_DEPLOY_PATH/infra/mysql/init.sql"
-ssh -i "$QA_SSH_KEY" -o BatchMode=yes "$QA_SSH_USER@$QA_HOST" "cd '$QA_DEPLOY_PATH' && IMAGE_PREFIX='${IMAGE_NAMESPACE}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.qa.yml pull && IMAGE_PREFIX='${IMAGE_NAMESPACE}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.qa.yml up --no-build -d && IMAGE_PREFIX='${IMAGE_NAMESPACE}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.qa.yml ps"
+
+# The remote host must already have its own protected .env file.
+ssh -i "$QA_SSH_KEY" \
+  -o BatchMode=yes \
+  "$QA_SSH_USER@$QA_HOST" \
+  "mkdir -p '$QA_DEPLOY_PATH/infra/mysql' && test -f '$QA_DEPLOY_PATH/.env'"
+
+scp -i "$QA_SSH_KEY" \
+  -o BatchMode=yes \
+  .deploy/docker-compose.yml \
+  .deploy/docker-compose.qa.yml \
+  "$QA_SSH_USER@$QA_HOST:$QA_DEPLOY_PATH/"
+
+scp -i "$QA_SSH_KEY" \
+  -o BatchMode=yes \
+  .deploy/infra/mysql/init.sql \
+  "$QA_SSH_USER@$QA_HOST:$QA_DEPLOY_PATH/infra/mysql/init.sql"
+
+ssh -i "$QA_SSH_KEY" \
+  -o BatchMode=yes \
+  "$QA_SSH_USER@$QA_HOST" \
+  "cd '$QA_DEPLOY_PATH' &&
+   IMAGE_PREFIX='${IMAGE_NAMESPACE}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.qa.yml pull &&
+   IMAGE_PREFIX='${IMAGE_NAMESPACE}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.qa.yml up --no-build -d &&
+   IMAGE_PREFIX='${IMAGE_NAMESPACE}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.yml -f docker-compose.qa.yml ps"
+
+echo "QA deployment commands completed."
 '''
           }
         }
@@ -151,10 +322,27 @@ ssh -i "$QA_SSH_KEY" -o BatchMode=yes "$QA_SSH_USER@$QA_HOST" "cd '$QA_DEPLOY_PA
 
   post {
     always {
-      archiveArtifacts artifacts: 'services/**/target/surefire-reports/*.xml', allowEmptyArchive: true
-      junit testResults: 'services/**/target/surefire-reports/*.xml', allowEmptyResults: true
+      archiveArtifacts(
+        artifacts: 'smart-factory-platform/services/**/target/surefire-reports/*.xml',
+        allowEmptyArchive: true
+      )
+
+      junit(
+        testResults: 'smart-factory-platform/services/**/target/surefire-reports/*.xml',
+        allowEmptyResults: true
+      )
     }
-    success { echo "Pipeline succeeded. Published image tag: ${env.IMAGE_TAG ?: 'not published'}" }
-    failure { echo 'Pipeline failed. Open the failed stage in Jenkins Blue Ocean and inspect its console output.' }
+
+    success {
+      echo "Pipeline succeeded. Image tag: ${env.IMAGE_TAG ?: 'not published'}"
+    }
+
+    failure {
+      echo 'Pipeline failed. Open the failed stage and inspect Console Output.'
+    }
+
+    cleanup {
+      echo 'Pipeline finished.'
+    }
   }
 }
