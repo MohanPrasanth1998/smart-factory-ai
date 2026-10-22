@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:7080}
+              predicates:
+                - Path=/api/v1/auth/**
+
+            - id: user-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:7080}
+              predicates:
+                - Path=/api/v1/users/**
+
+            - id: factory-service
+              uri: ${FACTORY_SERVICE_URL:http://localhost:7070}
+              predicates:
+                - Path=/api/v1/factories/**
+
+server:
+  port: 9090
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+
+logging:
+  level:
+    org.springframework.security: DEBUG

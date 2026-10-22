@@ -1,0 +1,19 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+!.env.qa.example
+*.pem
+*.key
+.secrets/
+
+# Build output and local logs
+**/target/
+build-logs/
+*.log
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

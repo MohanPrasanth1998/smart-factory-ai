@@ -1,0 +1,33 @@
+# Development profile override. Local credentials should be stored in .env (never committed).
+# Usage: docker compose -f docker-compose.yml -f docker-compose.develop.yml up --build -d
+services:
+  auth-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  factory-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  machine-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  telemetry-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  device-simulator-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  maintenance-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  production-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  analytics-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  notification-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop
+  api-gateway:
+    environment:
+      SPRING_PROFILES_ACTIVE: develop

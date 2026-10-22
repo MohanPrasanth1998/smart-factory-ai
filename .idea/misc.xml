@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/ai/ai-service/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/auth/auth-service/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/factory/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/gateway/api-gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/machine/machine-service/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/analytics/analytics-service/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/telemetry/telemetry-service/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/production/production-service/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/maintenances/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/notification/notification-service/pom.xml" />
+        <option value="$PROJECT_DIR$/smart-factory-platform/services/device-simulator/device-simulator-service/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="21" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

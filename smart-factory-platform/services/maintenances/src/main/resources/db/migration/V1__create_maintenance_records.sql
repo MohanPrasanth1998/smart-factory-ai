@@ -1,0 +1,1 @@
+CREATE TABLE maintenance_records (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,machine_code VARCHAR(64) NOT NULL,description VARCHAR(500) NOT NULL,status VARCHAR(24) NOT NULL,scheduled_at TIMESTAMP(6) NULL,created_at TIMESTAMP(6) NOT NULL,INDEX idx_maintenance_machine_status(machine_code,status));

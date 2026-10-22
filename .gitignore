@@ -1,0 +1,16 @@
+# IDE
+.idea/
+.vscode/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+!.env.qa.example
+
+# Build output
+**/target/
+**/build/
+
+# Logs
+*.log

@@ -1,0 +1,1 @@
+CREATE TABLE production_orders (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,machine_code VARCHAR(64) NOT NULL,product_code VARCHAR(64) NOT NULL,planned_quantity INT NOT NULL,completed_quantity INT NOT NULL DEFAULT 0,status VARCHAR(24) NOT NULL,created_at TIMESTAMP(6) NOT NULL,INDEX idx_production_machine_status(machine_code,status));

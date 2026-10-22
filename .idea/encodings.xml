@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/ai/ai-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/analytics/analytics-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/auth/auth-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/device-simulator/device-simulator-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/factory/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/gateway/api-gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/machine/machine-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/maintenances/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/notification/notification-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/production/production-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/smart-factory-platform/services/telemetry/telemetry-service/src/main/java" charset="UTF-8" />
+  </component>
+</project>

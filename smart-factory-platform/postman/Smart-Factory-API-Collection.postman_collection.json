@@ -1,0 +1,1436 @@
+{
+  "info": {
+    "_postman_id": "b0c77f7e-1b28-49b4-a3cc-82d6c8e5c1a9",
+    "name": "Smart Factory Platform - API Smoke & Workflow Tests",
+    "description": "API collection for the current Smart Factory source. Includes direct service requests, health diagnostics, and basic create/read/update/delete workflows. Run in order; create factory and machine before telemetry/simulator/maintenance/production. Requests may need adjustment if security or DTO validation changes. Health diagnostic tests deliberately accept 401/403/404/503 so inspect the response; these are not evidence of healthy services.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "jwt",
+      "value": ""
+    },
+    {
+      "key": "testUsername",
+      "value": "sf_api_user"
+    },
+    {
+      "key": "testPassword",
+      "value": "ChangeMe_12345!"
+    },
+    {
+      "key": "factoryCode",
+      "value": "FACTORY-DEMO-01"
+    },
+    {
+      "key": "machineCode",
+      "value": "MACHINE-DEMO-01"
+    },
+    {
+      "key": "telemetryId",
+      "value": "1"
+    },
+    {
+      "key": "maintenanceId",
+      "value": "1"
+    },
+    {
+      "key": "productionOrderId",
+      "value": "1"
+    },
+    {
+      "key": "runId",
+      "value": "demo"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Health checks (all services)",
+      "description": "Diagnostic checks for every service. Review response body and status; accepted statuses are diagnostic only, not a pass signal for unhealthy/disabled endpoints.",
+      "item": [
+        {
+          "name": "Auth Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Factory Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{factoryUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Machine Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{machineUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telemetry Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{telemetryUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Device Simulator Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{simulatorUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maintenance Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{maintenanceUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Production Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{productionUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analytics Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{analyticsUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Notification Service - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{notificationUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API Gateway - actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gatewayUrl}}/actuator/health",
+            "description": "Diagnostic health check. A 404 means actuator health is not exposed/installed; 401/403 means security protects it; 503 means dependency health is DOWN. Investigate rather than treating these as healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Health endpoint responds (200 expected when actuator health is exposed)\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404, 503]); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - Auth and users",
+      "description": "Authentication and user-management endpoints.",
+      "item": [
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authUrl}}/api/v1/users",
+            "description": "Creates a test account. Use a unique username; the collection generates one in pre-request script.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"{{testPassword}}\",\n  \"role\": \"ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"testUsername\", \"sf_api_\" + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 201 Created\", function () { pm.response.to.have.status(201); });",
+                  "if (pm.response.code === 201 || pm.response.code === 200) { try { const j=pm.response.json(); if(j.username) pm.collectionVariables.set(\"testUsername\", j.username); } catch(e){} }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authUrl}}/api/v1/auth/login",
+            "description": "Saves token as collection variable jwt if login succeeds.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+                  "try { const j=pm.response.json(); if (j.token) { pm.collectionVariables.set(\"jwt\", j.token); } } catch(e) {}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List users - requires authorization if configured",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{authUrl}}/api/v1/users",
+            "description": "The current code may only expose user creation. If this returns 404, no list-users endpoint is implemented."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Request returned a recognizable HTTP response\", function () { pm.expect(pm.response.code).to.be.within(200, 599); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Factory Service",
+      "description": "",
+      "item": [
+        {
+          "name": "Create factory",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{factoryUrl}}/api/v1/factories",
+            "description": "Creates a factory and stores returned factoryCode for later requests.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo Factory {{runId}}\",\n  \"location\": \"QA Lab\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"runId\", String(Date.now()));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 201 Created\", function () { pm.response.to.have.status(201); });",
+                  "try {const j=pm.response.json(); if(j.factoryCode) pm.collectionVariables.set(\"factoryCode\",j.factoryCode); if(j.id) pm.collectionVariables.set(\"factoryId\",j.id);} catch(e){}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List factories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{factoryUrl}}/api/v1/factories?page=0&size=10",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get factory by code",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{factoryUrl}}/api/v1/factories/{{factoryCode}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update factory",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{factoryUrl}}/api/v1/factories/{{factoryCode}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo Factory Updated\",\n  \"location\": \"QA Lab Updated\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Machine Service",
+      "description": "",
+      "item": [
+        {
+          "name": "Create machine",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{machineUrl}}/api/v1/machines",
+            "description": "Create a factory first and ensure the factory remains available. Some service logic may validate factoryCode.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo Press\",\n  \"type\": \"PRESS\",\n  \"factoryCode\": \"{{factoryCode}}\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 201 Created\", function () { pm.response.to.have.status(201); });",
+                  "try {const j=pm.response.json(); if(j.machineCode) pm.collectionVariables.set(\"machineCode\",j.machineCode);} catch(e){}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List machines",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{machineUrl}}/api/v1/machines?page=0&size=10",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get machine by code",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{machineUrl}}/api/v1/machines/{{machineCode}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update machine",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{machineUrl}}/api/v1/machines/{{machineCode}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo Press Updated\",\n  \"type\": \"PRESS\",\n  \"factoryCode\": \"{{factoryCode}}\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Machine Feign test - get factory",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{machineUrl}}/api/v1/test/factory/{{factoryCode}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Telemetry Service",
+      "description": "",
+      "item": [
+        {
+          "name": "Create telemetry record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{telemetryUrl}}/api/v1/telemetry",
+            "description": "Requires a valid machineCode if telemetry service validates against Machine Service.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"machineCode\": \"{{machineCode}}\",\n  \"timestamp\": \"2026-10-21T12:00:00Z\",\n  \"machineState\": \"RUNNING\",\n  \"metrics\": {\n    \"temperature\": 72.5,\n    \"vibration\": 0.35,\n    \"pressure\": 5.2\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 201 Created\", function () { pm.response.to.have.status(201); });",
+                  "try {const j=pm.response.json(); if(j.id) pm.collectionVariables.set(\"telemetryId\",j.id);} catch(e){}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get telemetry by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{telemetryUrl}}/api/v1/telemetry/{{telemetryId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get machine telemetry history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{telemetryUrl}}/api/v1/machines/{{machineCode}}/telemetry",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Device Simulator Service",
+      "description": "",
+      "item": [
+        {
+          "name": "Simulator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{simulatorUrl}}/api/v1/simulator/health",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Emit one telemetry event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{simulatorUrl}}/api/v1/simulator/devices/{{machineCode}}/telemetry",
+            "description": "Publishes one synthetic event. Verify telemetry consumer/database and Kafka topic separately."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Run simulation batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{simulatorUrl}}/api/v1/simulator/run",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"machineCode\": \"{{machineCode}}\",\n  \"count\": 5,\n  \"intervalMs\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stop simulation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{simulatorUrl}}/api/v1/simulator/stop",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Maintenance Service",
+      "description": "",
+      "item": [
+        {
+          "name": "Create maintenance record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{maintenanceUrl}}/api/v1/maintenance",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"machineCode\": \"{{machineCode}}\",\n  \"description\": \"Scheduled inspection from API collection\",\n  \"scheduledAt\": \"2026-10-22T09:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 201 Created\", function () { pm.response.to.have.status(201); });",
+                  "try {const j=pm.response.json(); if(j.id) pm.collectionVariables.set(\"maintenanceId\",j.id);} catch(e){}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List maintenance records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{maintenanceUrl}}/api/v1/maintenance",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List maintenance by machine",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{maintenanceUrl}}/api/v1/maintenance?machineCode={{machineCode}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get maintenance by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{maintenanceUrl}}/api/v1/maintenance/{{maintenanceId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update maintenance status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{maintenanceUrl}}/api/v1/maintenance/{{maintenanceId}}/status",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 - Production Service",
+      "description": "",
+      "item": [
+        {
+          "name": "Create production order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{productionUrl}}/api/v1/production/orders",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"machineCode\": \"{{machineCode}}\",\n  \"productCode\": \"PRODUCT-DEMO-01\",\n  \"plannedQuantity\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 201 Created\", function () { pm.response.to.have.status(201); });",
+                  "try {const j=pm.response.json(); if(j.id) pm.collectionVariables.set(\"productionOrderId\",j.id);} catch(e){}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List production orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{productionUrl}}/api/v1/production/orders",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List production orders by machine",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{productionUrl}}/api/v1/production/orders?machineCode={{machineCode}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get production order by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{productionUrl}}/api/v1/production/orders/{{productionOrderId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update production progress",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{productionUrl}}/api/v1/production/orders/{{productionOrderId}}/progress",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completedQuantity\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is successful\", function () { pm.expect(pm.response.code).to.be.within(200, 299); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 - Analytics and Notification (runtime checks)",
+      "description": "",
+      "item": [
+        {
+          "name": "Analytics actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{analyticsUrl}}/actuator/health",
+            "description": "No REST controller was found in the current source. Use actuator/logs/Kafka/database checks until business APIs are implemented."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Inspect health response\", function () { pm.expect(pm.response.code).to.be.within(200, 599); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Notification actuator health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{notificationUrl}}/actuator/health",
+            "description": "No REST controller was found in the current source. Use actuator/logs/Kafka/database checks until business APIs are implemented."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Inspect health response\", function () { pm.expect(pm.response.code).to.be.within(200, 599); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 - API Gateway routes",
+      "description": "",
+      "item": [
+        {
+          "name": "Gateway health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gatewayUrl}}/actuator/health",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Gateway health endpoint responds\", function () { pm.expect(pm.response.code).to.be.oneOf([200,401,403,404,503]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Gateway - list factories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gatewayUrl}}/api/v1/factories?page=0&size=10",
+            "description": "Gateway currently has routes for auth, users, and factories only; machine/telemetry/etc. routes are not configured in the checked source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Gateway route returns HTTP response\", function () { pm.expect(pm.response.code).to.be.within(200,599); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 - Cleanup (run only after all workflows)",
+      "description": "Destructive cleanup. Run only after telemetry, simulator, maintenance, and production requests have completed.",
+      "item": [
+        {
+          "name": "Delete machine",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{machineUrl}}/api/v1/machines/{{machineCode}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 204 No Content\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete factory",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{factoryUrl}}/api/v1/factories/{{factoryCode}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP status is 204 No Content\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

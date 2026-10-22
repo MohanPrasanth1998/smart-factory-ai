@@ -1,0 +1,13 @@
+# Keep Docker build context small; CI runs Maven verification before image packaging.
+target/
+.git/
+.idea/
+.vscode/
+.mvn/
+*.log
+build-logs/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example

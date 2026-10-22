@@ -1,0 +1,41 @@
+# Local developer profile. Override credentials through environment variables.
+spring:
+  application:
+    name: telemetry-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:15432/smart_factory_telemetry}
+    username: ${SPRING_DATASOURCE_USERNAME:smart_factory}
+    password: ${SPRING_DATASOURCE_PASSWORD:change-me-local}
+    hikari:
+      connection-timeout: 5000
+      maximum-pool-size: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 2s
+server:
+  port: 7073
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+logging:
+  level:
+    root: INFO
+clients:
+  machine:
+    url: ${CLIENTS_MACHINE_URL:http://localhost:7072}
+app:
+  kafka:
+    ingest-topic: ${TELEMETRY_INGEST_TOPIC:factory.telemetry.ingest.v1}
+    telemetry-topic: ${TELEMETRY_TOPIC:factory.telemetry.v1}
