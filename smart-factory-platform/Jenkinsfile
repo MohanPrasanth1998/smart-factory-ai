@@ -67,8 +67,7 @@ pipeline {
                          * smart-factory-mysql-password: Secret text
                          * smart-factory-jwt-private-key: Secret file
                          *
-                         * The private key is supplied by Jenkins.
-                         * Never commit the private key to Git.
+                         * Never commit the private JWT key.
                          */
 
                         withCredentials([
@@ -101,11 +100,6 @@ pipeline {
                                 '''
                             }
                         }
-
-                        /*
-                         * Verify other non-AI services.
-                         * AI services remain excluded.
-                         */
 
                         def servicePoms = [
                             'services/factory/factory-service/pom.xml',
@@ -151,6 +145,86 @@ pipeline {
             }
         }
 
+        stage('Build non-AI Docker images') {
+            steps {
+                dir('smart-factory-platform') {
+                    script {
+                        def dockerServices = [
+                            [
+                                name: 'auth-service',
+                                path: 'services/auth/auth-service'
+                            ],
+                            [
+                                name: 'factory-service',
+                                path: 'services/factory'
+                            ],
+                            [
+                                name: 'api-gateway',
+                                path: 'services/gateway/api-gateway'
+                            ],
+                            [
+                                name: 'machine-service',
+                                path: 'services/machine/machine-service'
+                            ],
+                            [
+                                name: 'telemetry-service',
+                                path: 'services/telemetry/telemetry-service'
+                            ],
+                            [
+                                name: 'analytics-service',
+                                path: 'services/analytics/analytics-service'
+                            ],
+                            [
+                                name: 'device-simulator-service',
+                                path: 'services/device-simulator/device-simulator-service'
+                            ],
+                            [
+                                name: 'maintenances-service',
+                                path: 'services/maintenances'
+                            ],
+                            [
+                                name: 'notification-service',
+                                path: 'services/notification/notification-service'
+                            ],
+                            [
+                                name: 'production-service',
+                                path: 'services/production/production-service'
+                            ]
+                        ]
+
+                        for (service in dockerServices) {
+                            def dockerfile = "${service.path}/Dockerfile"
+                            def pom = "${service.path}/pom.xml"
+                            def src = "${service.path}/src"
+
+                            if (!fileExists(dockerfile)) {
+                                error("Missing Dockerfile: ${dockerfile}")
+                            }
+
+                            if (!fileExists(pom) || !fileExists(src)) {
+                                error("Missing pom.xml or src directory for ${service.name}: ${service.path}")
+                            }
+
+                            def image = "${env.IMAGE_PREFIX}/${service.name}:latest"
+
+                            echo "Building Docker image: ${image}"
+
+                            sh """
+                                set -e
+                                docker build \
+                                    --pull \
+                                    -t '${image}' \
+                                    -f '${dockerfile}' \
+                                    '${service.path}'
+                            """
+                        }
+
+                        echo 'All non-AI Docker image builds completed.'
+                    }
+                }
+            }
+        }
+
         stage('Build and publish multi-arch images to GHCR') {
             when {
                 expression {
@@ -175,8 +249,7 @@ pipeline {
                                     -u "$GHCR_USER" --password-stdin
 
                                 echo "GHCR login successful."
-                                echo "Docker image build commands are not configured yet."
-                                echo "Add docker buildx build commands for the actual service Dockerfiles."
+                                echo "Image publishing commands are not configured yet."
 
                                 docker logout ghcr.io
                             '''
