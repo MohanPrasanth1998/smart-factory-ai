@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'linux-java21-docker' }
+  agent any
 
   options {
     timestamps()
