@@ -36,10 +36,12 @@ pipeline {
     }
 
     stages {
+
         stage('Verify build tools') {
             steps {
                 sh '''
                     set -e
+
                     echo "Checking Java..."
                     java -version
 
@@ -59,14 +61,17 @@ pipeline {
             steps {
                 dir('smart-factory-platform') {
                     script {
+
                         /*
-                         * The Auth Service tests need a reachable MySQL database.
-                         * Create a Jenkins credential with ID:
+                         * Auth Service database credentials.
+                         *
+                         * Jenkins credential ID:
                          * smart-factory-mysql-password
                          *
                          * Credential type: Secret text
-                         * Secret: the MySQL root password
+                         * Secret: password for MySQL user auth_ci
                          */
+
                         withCredentials([
                             string(
                                 credentialsId: 'smart-factory-mysql-password',
@@ -75,22 +80,26 @@ pipeline {
                         ]) {
                             withEnv([
                                 'SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/smart_factory_auth',
-                                'SPRING_DATASOURCE_USERNAME=root',
+                                'SPRING_DATASOURCE_USERNAME=auth_ci',
                                 'SPRING_DATASOURCE_PASSWORD=' + env.MYSQL_PASSWORD
                             ]) {
                                 sh '''
                                     set -e
                                     echo "Verifying Auth Service..."
-                                    mvn -B -f services/auth/auth-service/pom.xml verify
+
+                                    mvn -B \
+                                        -f services/auth/auth-service/pom.xml \
+                                        verify
                                 '''
                             }
                         }
 
                         /*
                          * Verify other non-AI services.
-                         * Update these paths if your repository uses different
-                         * module names or Maven POM locations.
+                         * Each service must have its own database
+                         * configuration if integration tests require a DB.
                          */
+
                         def servicePoms = [
                             'services/factory/factory-service/pom.xml',
                             'services/gateway/api-gateway/pom.xml'
@@ -158,8 +167,9 @@ pipeline {
                                 echo "$GHCR_TOKEN" | docker login ghcr.io \
                                     -u "$GHCR_USER" --password-stdin
 
-                                echo "Building and publishing configured non-AI images."
-                                echo "Add docker buildx build commands for your actual service Dockerfiles here."
+                                echo "GHCR login successful."
+                                echo "Docker image build commands are not configured yet."
+                                echo "Add docker buildx build commands for the actual service Dockerfiles."
 
                                 docker logout ghcr.io
                             '''
@@ -169,7 +179,7 @@ pipeline {
             }
         }
 
-        stage('Deploy QA (manual parameter)') {
+        stage('Deploy QA') {
             when {
                 expression {
                     return params.DEPLOY_TARGET == 'qa'
@@ -181,8 +191,8 @@ pipeline {
                     sh '''
                         set -e
                         echo "QA deployment selected."
-                        echo "Configure your QA deployment command here after validating"
-                        echo "the QA environment, secrets, and Compose service names."
+                        echo "QA deployment commands are not configured yet."
+                        echo "Configure and validate the QA environment before deployment."
                     '''
                 }
             }
