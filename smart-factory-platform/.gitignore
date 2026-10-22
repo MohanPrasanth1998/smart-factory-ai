@@ -3,7 +3,9 @@
 .env.*
 !.env.example
 !.env.qa.example
+# Ignore private keys, but allow public keys required by services
 *.pem
+!jwt-public.pem
 *.key
 .secrets/
 
@@ -17,3 +19,5 @@ build-logs/
 .vscode/
 .DS_Store
 Thumbs.db
+
+

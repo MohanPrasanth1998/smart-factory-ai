@@ -63,29 +63,37 @@ pipeline {
                     script {
 
                         /*
-                         * Auth Service database credentials.
+                         * Auth Service credentials:
+                         * smart-factory-mysql-password: Secret text
+                         * smart-factory-jwt-private-key: Secret file
                          *
-                         * Jenkins credential ID:
-                         * smart-factory-mysql-password
-                         *
-                         * Credential type: Secret text
-                         * Secret: password for MySQL user auth_ci
+                         * The private key is supplied by Jenkins.
+                         * Never commit the private key to Git.
                          */
 
                         withCredentials([
                             string(
                                 credentialsId: 'smart-factory-mysql-password',
                                 variable: 'MYSQL_PASSWORD'
+                            ),
+                            file(
+                                credentialsId: 'smart-factory-jwt-private-key',
+                                variable: 'JWT_PRIVATE_KEY_PATH'
                             )
                         ]) {
                             withEnv([
                                 'SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/smart_factory_auth',
                                 'SPRING_DATASOURCE_USERNAME=auth_ci',
-                                'SPRING_DATASOURCE_PASSWORD=' + env.MYSQL_PASSWORD
+                                'SPRING_DATASOURCE_PASSWORD=' + env.MYSQL_PASSWORD,
+                                "JWT_PUBLIC_KEY_PATH=${pwd()}/services/auth/auth-service/src/main/resources/keys/jwt-public.pem"
                             ]) {
                                 sh '''
                                     set -e
+
                                     echo "Verifying Auth Service..."
+
+                                    test -f "$JWT_PRIVATE_KEY_PATH"
+                                    test -f "$JWT_PUBLIC_KEY_PATH"
 
                                     mvn -B \
                                         -f services/auth/auth-service/pom.xml \
@@ -96,8 +104,7 @@ pipeline {
 
                         /*
                          * Verify other non-AI services.
-                         * Each service must have its own database
-                         * configuration if integration tests require a DB.
+                         * AI services remain excluded.
                          */
 
                         def servicePoms = [
