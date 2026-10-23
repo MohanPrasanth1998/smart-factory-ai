@@ -5,55 +5,107 @@ pipeline {
     options {
         timestamps()
         disableConcurrentBuilds()
+        skipDefaultCheckout(false)
     }
 
     environment {
-        GIT_URL = 'https://github.com/MohanPrasanth1998/smart-factory-platform.git'
         IMAGE_NAME = 'smart-factory/factory-service:local'
+        PROJECT_DIR = 'smart-factory-platform'
+        FACTORY_DIR = 'smart-factory-platform/services/factory'
     }
 
     stages {
-        stage('Checkout') {
+
+        stage('Verify Build Tools') {
             steps {
-                git branch: 'main', url: "${GIT_URL}"
+                sh '''
+                    set -eu
+
+                    echo "===== Java ====="
+                    java -version
+
+                    echo "===== Git ====="
+                    git --version
+
+                    echo "===== Docker ====="
+                    docker version
+
+                    echo "===== Maven availability ====="
+                    if command -v mvn >/dev/null 2>&1; then
+                        mvn -version
+                    else
+                        echo "System Maven not found; will check Maven Wrapper."
+                    fi
+                '''
             }
         }
 
         stage('Locate Factory Service') {
             steps {
                 script {
-                    if (fileExists('services/factory/pom.xml')) {
-                        env.FACTORY_DIR = 'services/factory'
-                    } else if (fileExists('services/factory/factory-service/pom.xml')) {
-                        env.FACTORY_DIR = 'services/factory/factory-service'
-                    } else {
-                        error('Factory Service pom.xml was not found. Check the repository structure.')
+                    if (!fileExists("${env.FACTORY_DIR}/pom.xml")) {
+                        error(
+                            "Factory Service pom.xml not found at " +
+                            "${env.FACTORY_DIR}/pom.xml"
+                        )
                     }
 
                     if (!fileExists("${env.FACTORY_DIR}/Dockerfile")) {
-                        error("Dockerfile not found in ${env.FACTORY_DIR}")
+                        error(
+                            "Factory Service Dockerfile not found at " +
+                            "${env.FACTORY_DIR}/Dockerfile"
+                        )
+                    }
+
+                    if (!fileExists("${env.FACTORY_DIR}/mvnw") &&
+                        !fileExists("${env.PROJECT_DIR}/mvnw") &&
+                        !fileExists('mvnw')) {
+                        echo 'Maven Wrapper not found at the expected locations.'
+                        echo 'The build will try system Maven if available.'
                     }
 
                     echo "Factory Service directory: ${env.FACTORY_DIR}"
+                    echo "Maven POM: ${env.FACTORY_DIR}/pom.xml"
+                    echo "Dockerfile: ${env.FACTORY_DIR}/Dockerfile"
                 }
             }
         }
 
         stage('Maven Build and Tests') {
             steps {
-                dir("${env.FACTORY_DIR}") {
-                    sh '''
-                        set -eu
-                        if [ -f ./mvnw ]; then
+                script {
+                    if (fileExists("${env.FACTORY_DIR}/mvnw")) {
+                        dir("${env.FACTORY_DIR}") {
+                            sh '''
+                                set -eu
+                                chmod +x ./mvnw
+                                ./mvnw -B clean verify
+                            '''
+                        }
+                    } else if (fileExists("${env.PROJECT_DIR}/mvnw")) {
+                        dir("${env.PROJECT_DIR}") {
+                            sh '''
+                                set -eu
+                                chmod +x ./mvnw
+                                ./mvnw -B -f services/factory/pom.xml clean verify
+                            '''
+                        }
+                    } else if (fileExists('mvnw')) {
+                        sh '''
+                            set -eu
                             chmod +x ./mvnw
-                            ./mvnw -B clean verify
-                        elif command -v mvn >/dev/null 2>&1; then
-                            mvn -B clean verify
-                        else
-                            echo "Maven and Maven Wrapper are unavailable"
-                            exit 1
-                        fi
-                    '''
+                            ./mvnw -B -f \
+                                smart-factory-platform/services/factory/pom.xml \
+                                clean verify
+                        '''
+                    } else {
+                        sh '''
+                            set -eu
+                            mvn -B -f \
+                                smart-factory-platform/services/factory/pom.xml \
+                                clean verify
+                        '''
+                    }
                 }
             }
         }
@@ -62,10 +114,13 @@ pipeline {
             steps {
                 sh '''
                     set -eu
+
+                    echo "Building Factory Service Docker image..."
+
                     docker build \
-                      -t "$IMAGE_NAME" \
-                      -f "$FACTORY_DIR/Dockerfile" \
-                      "$FACTORY_DIR"
+                        -t "$IMAGE_NAME" \
+                        -f "$FACTORY_DIR/Dockerfile" \
+                        "$FACTORY_DIR"
                 '''
             }
         }
@@ -74,9 +129,14 @@ pipeline {
             steps {
                 sh '''
                     set -eu
+
+                    echo "Verifying Docker image..."
+
                     docker image inspect "$IMAGE_NAME" >/dev/null
+
                     docker image ls "$IMAGE_NAME"
-                    echo "Factory Service CI pipeline completed successfully."
+
+                    echo "Factory Service Docker image verified."
                 '''
             }
         }
@@ -84,13 +144,16 @@ pipeline {
 
     post {
         success {
-            echo 'Factory Service CI: SUCCESS'
+            echo 'SUCCESS: Factory Service CI pipeline completed.'
         }
+
         failure {
-            echo 'Factory Service CI: FAILED. Check the first failing stage in the console log.'
+            echo 'FAILURE: Factory Service CI pipeline failed.'
+            echo 'Open Console Output and inspect the first failing stage.'
         }
+
         always {
-            echo 'Factory Service CI finished.'
+            echo 'Factory Service CI pipeline finished.'
         }
     }
 }
