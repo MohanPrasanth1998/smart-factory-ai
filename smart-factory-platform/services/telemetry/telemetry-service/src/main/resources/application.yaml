@@ -2,9 +2,9 @@ spring:
   application:
     name: telemetry-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:15432/smart_factory_telemetry}
-    username: ${SPRING_DATASOURCE_USERNAME:smart_factory}
-    password: ${SPRING_DATASOURCE_PASSWORD:SmartFactory@2026}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/smart_factory_telemetry}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:mohan1998}
   jpa:
     hibernate:
       ddl-auto: validate

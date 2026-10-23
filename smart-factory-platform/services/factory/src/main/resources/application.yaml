@@ -3,9 +3,9 @@ spring:
     name: factory-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/smart_factory
+    url: jdbc:mysql://localhost:3306/smart_factory_factories
     username: root
-    password: SmartFactoryMySQL@2026
+    password: mohan1998
 
   jpa:
     hibernate:
