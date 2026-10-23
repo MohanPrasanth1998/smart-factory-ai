@@ -5,7 +5,6 @@ pipeline {
     options {
         timestamps()
         disableConcurrentBuilds()
-        skipDefaultCheckout(false)
     }
 
     environment {
@@ -30,11 +29,11 @@ pipeline {
                     echo "===== Docker ====="
                     docker version
 
-                    echo "===== Maven availability ====="
+                    echo "===== Maven ====="
                     if command -v mvn >/dev/null 2>&1; then
                         mvn -version
                     else
-                        echo "System Maven not found; will check Maven Wrapper."
+                        echo "System Maven unavailable; checking Maven Wrapper."
                     fi
                 '''
             }
@@ -44,67 +43,56 @@ pipeline {
             steps {
                 script {
                     if (!fileExists("${env.FACTORY_DIR}/pom.xml")) {
-                        error(
-                            "Factory Service pom.xml not found at " +
-                            "${env.FACTORY_DIR}/pom.xml"
-                        )
+                        error("Factory Service pom.xml not found: ${env.FACTORY_DIR}/pom.xml")
                     }
 
                     if (!fileExists("${env.FACTORY_DIR}/Dockerfile")) {
-                        error(
-                            "Factory Service Dockerfile not found at " +
-                            "${env.FACTORY_DIR}/Dockerfile"
-                        )
-                    }
-
-                    if (!fileExists("${env.FACTORY_DIR}/mvnw") &&
-                        !fileExists("${env.PROJECT_DIR}/mvnw") &&
-                        !fileExists('mvnw')) {
-                        echo 'Maven Wrapper not found at the expected locations.'
-                        echo 'The build will try system Maven if available.'
+                        error("Factory Service Dockerfile not found: ${env.FACTORY_DIR}/Dockerfile")
                     }
 
                     echo "Factory Service directory: ${env.FACTORY_DIR}"
-                    echo "Maven POM: ${env.FACTORY_DIR}/pom.xml"
-                    echo "Dockerfile: ${env.FACTORY_DIR}/Dockerfile"
                 }
             }
         }
 
         stage('Maven Build and Tests') {
             steps {
-                script {
-                    if (fileExists("${env.FACTORY_DIR}/mvnw")) {
-                        dir("${env.FACTORY_DIR}") {
+                withEnv([
+                    'SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/smart_factory'
+                ]) {
+                    script {
+                        if (fileExists("${env.FACTORY_DIR}/mvnw")) {
+                            dir("${env.FACTORY_DIR}") {
+                                sh '''
+                                    set -eu
+                                    chmod +x ./mvnw
+                                    ./mvnw -B clean verify
+                                '''
+                            }
+                        } else if (fileExists("${env.PROJECT_DIR}/mvnw")) {
+                            dir("${env.PROJECT_DIR}") {
+                                sh '''
+                                    set -eu
+                                    chmod +x ./mvnw
+                                    ./mvnw -B -f services/factory/pom.xml clean verify
+                                '''
+                            }
+                        } else if (fileExists('mvnw')) {
                             sh '''
                                 set -eu
                                 chmod +x ./mvnw
-                                ./mvnw -B clean verify
+                                ./mvnw -B -f \
+                                    smart-factory-platform/services/factory/pom.xml \
+                                    clean verify
                             '''
-                        }
-                    } else if (fileExists("${env.PROJECT_DIR}/mvnw")) {
-                        dir("${env.PROJECT_DIR}") {
+                        } else {
                             sh '''
                                 set -eu
-                                chmod +x ./mvnw
-                                ./mvnw -B -f services/factory/pom.xml clean verify
+                                mvn -B -f \
+                                    smart-factory-platform/services/factory/pom.xml \
+                                    clean verify
                             '''
                         }
-                    } else if (fileExists('mvnw')) {
-                        sh '''
-                            set -eu
-                            chmod +x ./mvnw
-                            ./mvnw -B -f \
-                                smart-factory-platform/services/factory/pom.xml \
-                                clean verify
-                        '''
-                    } else {
-                        sh '''
-                            set -eu
-                            mvn -B -f \
-                                smart-factory-platform/services/factory/pom.xml \
-                                clean verify
-                        '''
                     }
                 }
             }
@@ -133,7 +121,6 @@ pipeline {
                     echo "Verifying Docker image..."
 
                     docker image inspect "$IMAGE_NAME" >/dev/null
-
                     docker image ls "$IMAGE_NAME"
 
                     echo "Factory Service Docker image verified."
