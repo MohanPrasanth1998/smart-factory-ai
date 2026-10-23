@@ -1,0 +1,96 @@
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        GIT_URL = 'https://github.com/MohanPrasanth1998/smart-factory-platform.git'
+        IMAGE_NAME = 'smart-factory/factory-service:local'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: "${GIT_URL}"
+            }
+        }
+
+        stage('Locate Factory Service') {
+            steps {
+                script {
+                    if (fileExists('services/factory/pom.xml')) {
+                        env.FACTORY_DIR = 'services/factory'
+                    } else if (fileExists('services/factory/factory-service/pom.xml')) {
+                        env.FACTORY_DIR = 'services/factory/factory-service'
+                    } else {
+                        error('Factory Service pom.xml was not found. Check the repository structure.')
+                    }
+
+                    if (!fileExists("${env.FACTORY_DIR}/Dockerfile")) {
+                        error("Dockerfile not found in ${env.FACTORY_DIR}")
+                    }
+
+                    echo "Factory Service directory: ${env.FACTORY_DIR}"
+                }
+            }
+        }
+
+        stage('Maven Build and Tests') {
+            steps {
+                dir("${env.FACTORY_DIR}") {
+                    sh '''
+                        set -eu
+                        if [ -f ./mvnw ]; then
+                            chmod +x ./mvnw
+                            ./mvnw -B clean verify
+                        elif command -v mvn >/dev/null 2>&1; then
+                            mvn -B clean verify
+                        else
+                            echo "Maven and Maven Wrapper are unavailable"
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    set -eu
+                    docker build \
+                      -t "$IMAGE_NAME" \
+                      -f "$FACTORY_DIR/Dockerfile" \
+                      "$FACTORY_DIR"
+                '''
+            }
+        }
+
+        stage('Verify Docker Image') {
+            steps {
+                sh '''
+                    set -eu
+                    docker image inspect "$IMAGE_NAME" >/dev/null
+                    docker image ls "$IMAGE_NAME"
+                    echo "Factory Service CI pipeline completed successfully."
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Factory Service CI: SUCCESS'
+        }
+        failure {
+            echo 'Factory Service CI: FAILED. Check the first failing stage in the console log.'
+        }
+        always {
+            echo 'Factory Service CI finished.'
+        }
+    }
+}
