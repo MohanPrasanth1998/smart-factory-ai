@@ -1,0 +1,10 @@
+# Use this workspace to collaborate
+workspace:
+  id: ""
+
+localResources:
+  collections:
+    - ../smart-factory-platform/postman/Smart-Factory-API-Collection.postman_collection.json
+  environments:
+    - ../smart-factory-platform/postman/Smart-Factory-Develop.postman_environment.json
+    - ../smart-factory-platform/postman/Smart-Factory-QA.postman_environment.json

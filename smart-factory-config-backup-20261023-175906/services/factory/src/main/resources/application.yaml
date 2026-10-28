@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: factory-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/smart_factory_factories
+    username: root
+    password: mohan1998
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:keys/jwt-public.pem
+server:
+  port: 7070
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

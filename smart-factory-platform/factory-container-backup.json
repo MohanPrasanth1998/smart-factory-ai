@@ -1,0 +1,234 @@
+﻿[
+    {
+        "Id": "c0f2da8aa1aca6ef471866d361c6c1e494ebcc931f88590f0770d2587b0b91cc",
+        "Created": "2026-10-27T13:43:31.332304605Z",
+        "Path": "java",
+        "Args": [
+            "-XX:MaxRAMPercentage=75.0",
+            "-jar",
+            "/app/app.jar"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 14786,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-10-27T13:43:31.44777317Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:55b7cb72507deabb2325aa8793201f1ca53d053abb3356b56e6fc9baf9bec983",
+        "ResolvConfPath": "/var/lib/docker/containers/c0f2da8aa1aca6ef471866d361c6c1e494ebcc931f88590f0770d2587b0b91cc/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/c0f2da8aa1aca6ef471866d361c6c1e494ebcc931f88590f0770d2587b0b91cc/hostname",
+        "HostsPath": "/var/lib/docker/containers/c0f2da8aa1aca6ef471866d361c6c1e494ebcc931f88590f0770d2587b0b91cc/hosts",
+        "LogPath": "",
+        "Name": "/smart-factory-factory",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "local",
+                "Config": {}
+            },
+            "NetworkMode": "smart-factory-net",
+            "PortBindings": {
+                "7070/tcp": [
+                    {
+                        "HostIp": "",
+                        "HostPort": "7070"
+                    }
+                ]
+            },
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                47,
+                156
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "c0f2da8aa1ac",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "7070/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "SPRING_DATASOURCE_USERNAME=factory_app",
+                "SPRING_DATASOURCE_PASSWORD=mohan1998",
+                "SPRING_DATASOURCE_URL=jdbc:mysql://smart-factory-mysql:3306/smart_factory_factories",
+                "PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "JAVA_HOME=/opt/java/openjdk",
+                "LANG=en_US.UTF-8",
+                "LANGUAGE=en_US:en",
+                "LC_ALL=en_US.UTF-8",
+                "JAVA_VERSION=jdk-21.0.12.1+1"
+            ],
+            "Cmd": null,
+            "Image": "smart-factory-factory:latest",
+            "Volumes": null,
+            "WorkingDir": "/app",
+            "Entrypoint": [
+                "java",
+                "-XX:MaxRAMPercentage=75.0",
+                "-jar",
+                "/app/app.jar"
+            ],
+            "Labels": {
+                "org.opencontainers.image.created": "2026-10-25T10:30:32.309136+00:00",
+                "org.opencontainers.image.description": "The Ubuntu container image maintained by Canonical\n\nUbuntu is a Debian-based Linux operating system that runs from the desktop to the cloud, to all your internet connected things.\nIt is the world's most popular operating system across public clouds and OpenStack clouds.\nIt is the number one platform for containers; from Docker to Kubernetes to LXD, Ubuntu can run your containers at scale.\nFast, secure and simple, Ubuntu powers millions of PCs worldwide.\n",
+                "org.opencontainers.image.title": "ubuntu",
+                "org.opencontainers.image.version": "26.04"
+            }
+        },
+        "NetworkSettings": {
+            "SandboxID": "528d15a3f2a5144c2878fbbc80bb70099b9846b157ea45b09698964208a80c9f",
+            "SandboxKey": "/var/run/docker/netns/528d15a3f2a5",
+            "Ports": {
+                "7070/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "7070"
+                    },
+                    {
+                        "HostIp": "::",
+                        "HostPort": "7070"
+                    }
+                ]
+            },
+            "Networks": {
+                "smart-factory-net": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "291e9b48ef3b9174521d3e265f13166a91508670df6e5ca3dfed5c30fd7f57be",
+                    "EndpointID": "ea7e9abd80661bfb7861627e3282ed09f2a8116d05f425d7ebd240da59dd84a9",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.10",
+                    "MacAddress": "d6:87:9c:3b:a2:58",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "smart-factory-factory",
+                        "c0f2da8aa1ac"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:bd49d83babc1e34328c473ec22f02b1ad4fe09903241fed0299c36c37dea4b4d",
+            "size": 1813,
+            "platform": {
+                "architecture": "arm64",
+                "os": "linux"
+            }
+        }
+    }
+]

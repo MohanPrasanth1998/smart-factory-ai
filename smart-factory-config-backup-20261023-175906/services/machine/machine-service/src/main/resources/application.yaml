@@ -1,0 +1,72 @@
+spring:
+  application:
+    name: machine-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/smart_factory_machine
+    username: root
+    password: mohan1998
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:keys/jwt-public.pem
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          factory-service:
+            connectTimeout: 2000
+            readTimeout: 3000
+            loggerLevel: basic
+            retryer:
+              period: 100
+              maxPeriod: 1000
+              maxAttempts: 3
+
+server:
+  port: 7072
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers
+
+logging:
+  level:
+    org.springframework.web: INFO
+    com.smartfactory.machine.client.FactoryClient: DEBUG
+
+clients:
+  factory:
+    url: http://localhost:7070
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      factoryService:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+
+  retry:
+    instances:
+      factoryService:
+        maxAttempts: 3
+        waitDuration: 500ms
+        retryExceptions:
+          - feign.RetryableException

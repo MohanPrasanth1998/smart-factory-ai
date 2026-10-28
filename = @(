@@ -1,0 +1,101 @@
+[1mdiff --git a/smart-factory-platform/services/ai/ai-service/src/main/resources/application.yaml b/smart-factory-platform/services/ai/ai-service/src/main/resources/application.yaml[m
+[1mindex 8e5c87f..3191c70 100644[m
+[1m--- a/smart-factory-platform/services/ai/ai-service/src/main/resources/application.yaml[m
+[1m+++ b/smart-factory-platform/services/ai/ai-service/src/main/resources/application.yaml[m
+[36m@@ -4,12 +4,12 @@[m [mspring:[m
+ [m
+   ai:[m
+     ollama:[m
+[31m-      base-url: http://localhost:11434[m
+[32m+[m[32m      base-url: ${SPRING_AI_OLLAMA_BASE_URL:http://localhost:11434}[m
+       chat:[m
+[31m-        model: llama3.2[m
+[32m+[m[32m        model: ${SPRING_AI_OLLAMA_CHAT_MODEL:llama3.2}[m
+ [m
+ server:[m
+[31m-  port: 6060[m
+[32m+[m[32m  port: ${SERVER_PORT:6060}[m
+ [m
+ management:[m
+   endpoints:[m
+[1mdiff --git a/smart-factory-platform/services/auth/auth-service/src/main/resources/application.yaml b/smart-factory-platform/services/auth/auth-service/src/main/resources/application.yaml[m
+[1mindex 77bc969..644b75e 100644[m
+[1m--- a/smart-factory-platform/services/auth/auth-service/src/main/resources/application.yaml[m
+[1m+++ b/smart-factory-platform/services/auth/auth-service/src/main/resources/application.yaml[m
+[36m@@ -3,8 +3,8 @@[m [mspring:[m
+     name: auth-service[m
+ [m
+   datasource:[m
+[31m-    url: jdbc:mysql://localhost:3306/smart_factory_auth[m
+[31m-    username: root[m
+[32m+[m[32m    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smart_factory_auth}[m
+[32m+[m[32m    username: ${SPRING_DATASOURCE_USERNAME:root}[m
+     password: mohan1998[m
+ [m
+   jpa:[m
+[36m@@ -21,7 +21,7 @@[m [mspring:[m
+           public-key-location: classpath:keys/jwt-public.pem[m
+ [m
+ server:[m
+[31m-  port: 7080[m
+[32m+[m[32m  port: ${SERVER_PORT:7080}[m
+ [m
+ management:[m
+   endpoints:[m
+[1mdiff --git a/smart-factory-platform/services/factory/src/main/resources/application.yaml b/smart-factory-platform/services/factory/src/main/resources/application.yaml[m
+[1mindex 83cf523..6079113 100644[m
+[1m--- a/smart-factory-platform/services/factory/src/main/resources/application.yaml[m
+[1m+++ b/smart-factory-platform/services/factory/src/main/resources/application.yaml[m
+[36m@@ -3,8 +3,8 @@[m [mspring:[m
+     name: factory-service[m
+ [m
+   datasource:[m
+[31m-    url: jdbc:mysql://localhost:3306/smart_factory_factories[m
+[31m-    username: root[m
+[32m+[m[32m    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smart_factory_factories}[m
+[32m+[m[32m    username: ${SPRING_DATASOURCE_USERNAME:root}[m
+     password: mohan1998[m
+ [m
+   jpa:[m
+[36m@@ -21,7 +21,7 @@[m [mspring:[m
+         jwt:[m
+           public-key-location: classpath:keys/jwt-public.pem[m
+ server:[m
+[31m-  port: 7070[m
+[32m+[m[32m  port: ${SERVER_PORT:7070}[m
+ [m
+ management:[m
+   endpoints:[m
+[1mdiff --git a/smart-factory-platform/services/machine/machine-service/src/main/resources/application.yaml b/smart-factory-platform/services/machine/machine-service/src/main/resources/application.yaml[m
+[1mindex 4d01144..aa30376 100644[m
+[1m--- a/smart-factory-platform/services/machine/machine-service/src/main/resources/application.yaml[m
+[1m+++ b/smart-factory-platform/services/machine/machine-service/src/main/resources/application.yaml[m
+[36m@@ -3,8 +3,8 @@[m [mspring:[m
+     name: machine-service[m
+ [m
+   datasource:[m
+[31m-    url: jdbc:mysql://localhost:3306/smart_factory_machine[m
+[31m-    username: root[m
+[32m+[m[32m    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smart_factory_machine}[m
+[32m+[m[32m    username: ${SPRING_DATASOURCE_USERNAME:root}[m
+     password: mohan1998[m
+ [m
+   jpa:[m
+[36m@@ -34,7 +34,7 @@[m [mspring:[m
+               maxAttempts: 3[m
+ [m
+ server:[m
+[31m-  port: 7072[m
+[32m+[m[32m  port: ${SERVER_PORT:7072}[m
+ [m
+ management:[m
+   endpoints:[m
+[36m@@ -49,7 +49,7 @@[m [mlogging:[m
+ [m
+ clients:[m
+   factory:[m
+[31m-    url: http://localhost:7070[m
+[32m+[m[32m    url: ${CLIENTS_FACTORY_URL:http://localhost:7070}[m
+ [m
+ resilience4j:[m
+   circuitbreaker:[m

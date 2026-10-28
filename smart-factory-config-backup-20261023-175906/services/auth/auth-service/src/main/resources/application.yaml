@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/smart_factory_auth
+    username: root
+    password: mohan1998
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:keys/jwt-public.pem
+
+server:
+  port: 7080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+
+jwt:
+  private-key: ${JWT_PRIVATE_KEY_PATH:${user.home}/.smart-factory/keys/jwt-private.pem}
+  public-key: ${JWT_PUBLIC_KEY_PATH:${user.home}/.smart-factory/keys/jwt-public.pem}
+  expiration: 3600000
