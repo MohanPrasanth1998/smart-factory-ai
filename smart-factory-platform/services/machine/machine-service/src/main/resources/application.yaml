@@ -3,9 +3,9 @@ spring:
     name: machine-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/smart_factory_machine
-    username: root
-    password: mohan1998
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smart_factory_machine}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
     hibernate:
@@ -34,7 +34,7 @@ spring:
               maxAttempts: 3
 
 server:
-  port: 7072
+  port: ${SERVER_PORT:7072}
 
 management:
   endpoints:
@@ -49,7 +49,7 @@ logging:
 
 clients:
   factory:
-    url: http://localhost:7070
+    url: ${CLIENTS_FACTORY_URL:http://localhost:7070}
 
 resilience4j:
   circuitbreaker:

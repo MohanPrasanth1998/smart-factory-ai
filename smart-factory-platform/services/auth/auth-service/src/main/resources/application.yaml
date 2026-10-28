@@ -3,9 +3,9 @@ spring:
     name: auth-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/smart_factory_auth
-    username: root
-    password: mohan1998
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smart_factory_auth}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
     hibernate:
@@ -21,7 +21,7 @@ spring:
           public-key-location: classpath:keys/jwt-public.pem
 
 server:
-  port: 7080
+  port: ${SERVER_PORT:7080}
 
 management:
   endpoints:

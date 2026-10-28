@@ -1,10 +1,12 @@
 spring:
   application:
     name: production-service
+  flyway:
+    enabled: true
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smart_factory_production}
     username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:mohan1998}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate

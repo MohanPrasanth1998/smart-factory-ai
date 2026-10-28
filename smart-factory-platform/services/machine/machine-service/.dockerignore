@@ -1,5 +1,4 @@
-# Keep Docker build context small; CI runs Maven verification before image packaging.
-target/
+﻿# Keep Docker build context small; CI runs Maven verification before image packaging.
 .git/
 .idea/
 .vscode/

@@ -4,12 +4,12 @@ spring:
 
   ai:
     ollama:
-      base-url: http://localhost:11434
+      base-url: ${SPRING_AI_OLLAMA_BASE_URL:http://localhost:11434}
       chat:
-        model: llama3.2
+        model: ${SPRING_AI_OLLAMA_CHAT_MODEL:llama3.2}
 
 server:
-  port: 6060
+  port: ${SERVER_PORT:6060}
 
 management:
   endpoints:

@@ -21,3 +21,5 @@ build-logs/
 Thumbs.db
 
 
+
+# Local environment secrets

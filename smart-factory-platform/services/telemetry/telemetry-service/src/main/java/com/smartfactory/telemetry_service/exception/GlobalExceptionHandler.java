@@ -1,7 +1,10 @@
+
 package com.smartfactory.telemetry_service.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,6 +16,9 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MachineNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleMachineNotFound(
@@ -74,6 +80,12 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request) {
 
+        log.error(
+                "Unexpected error processing request: {}",
+                request.getRequestURI(),
+                ex
+        );
+
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred",
@@ -92,7 +104,6 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
     }
-
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(

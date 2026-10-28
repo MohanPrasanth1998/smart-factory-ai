@@ -10,7 +10,7 @@ public class FactoryServiceClient {
     private final RestClient restClient;
 
     public FactoryServiceClient(RestClient.Builder restClient){
-        this.restClient=restClient.baseUrl("http://localhost:7071").build();
+        this.restClient=restClient.baseUrl("${FACTORY_SERVICE_URL:http://localhost:7070}").build();
     }
 
     public FactoryResponse getFactoryByCode(String code){

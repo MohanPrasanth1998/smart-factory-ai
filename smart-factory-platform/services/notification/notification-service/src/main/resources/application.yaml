@@ -5,7 +5,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/smart_factory_notification}
     username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:mohan1998}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -28,3 +28,6 @@ management:
 app:
   kafka:
     telemetry-topic: ${TELEMETRY_TOPIC:factory.telemetry.v1}
+server:
+  port: ${SERVER_PORT:7077}
+

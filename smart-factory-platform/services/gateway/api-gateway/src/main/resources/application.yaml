@@ -1,3 +1,4 @@
+
 spring:
   application:
     name: api-gateway
@@ -7,31 +8,69 @@ spring:
       server:
         webmvc:
           routes:
-
             - id: auth-service
-              uri: ${AUTH_SERVICE_URL:http://localhost:7080}
+              uri: ${AUTH_SERVICE_URL:http://smart-factory-auth:7080}
               predicates:
                 - Path=/api/v1/auth/**
 
             - id: user-service
-              uri: ${AUTH_SERVICE_URL:http://localhost:7080}
+              uri: ${AUTH_SERVICE_URL:http://smart-factory-auth:7080}
               predicates:
                 - Path=/api/v1/users/**
 
             - id: factory-service
-              uri: ${FACTORY_SERVICE_URL:http://localhost:7070}
+              uri: ${FACTORY_SERVICE_URL:http://smart-factory-factory:7070}
               predicates:
                 - Path=/api/v1/factories/**
 
+            - id: machine-service
+              uri: ${MACHINE_SERVICE_URL:http://smart-factory-machine:7072}
+              predicates:
+                - Path=/api/v1/machines/**
+
+            - id: telemetry-service
+              uri: ${TELEMETRY_SERVICE_URL:http://smart-factory-telemetry:7073}
+              predicates:
+                - Path=/api/v1/telemetry/**
+
+            - id: analytics-service
+              uri: ${ANALYTICS_SERVICE_URL:http://smart-factory-analytics:7071}
+              predicates:
+                - Path=/api/v1/analytics/**
+
+            - id: maintenance-service
+              uri: ${MAINTENANCE_SERVICE_URL:http://smart-factory-maintenance:7075}
+              predicates:
+                - Path=/api/v1/maintenance/**
+
+            - id: production-service
+              uri: ${PRODUCTION_SERVICE_URL:http://smart-factory-production:7076}
+              predicates:
+                - Path=/api/v1/production/**
+
+            - id: notification-service
+              uri: ${NOTIFICATION_SERVICE_URL:http://smart-factory-notification:7077}
+              predicates:
+                - Path=/api/v1/notifications/**
+
+            - id: device-simulator-service
+              uri: ${DEVICE_SIMULATOR_SERVICE_URL:http://smart-factory-device-sim:7074}
+              predicates:
+                - Path=/api/v1/devices/**
+
+            - id: ai-service
+              uri: ${AI_SERVICE_URL:http://smart-factory-ai:6060}
+              predicates:
+                - Path=/api/v1/ai/**
+
 server:
-  port: 9090
+  port: ${SERVER_PORT:9090}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info,gateway
-
 
 logging:
   level:
